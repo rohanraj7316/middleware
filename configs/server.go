@@ -1,8 +1,9 @@
 package configs
 
 import (
-	"libs/middleware/helpers"
 	"net/http"
+
+	"github.com/rohanraj7316/middleware/helpers"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -24,7 +25,7 @@ var ServerDefault = fiber.Config{
 	// Max body size that the server accepts.
 	// -1 will decline any body size
 	//
-	// Default: 5 * 1024 * 1024
+	// Default: 5 * 1024 * 1024 = 5mb
 	BodyLimit: 5 * 1024 * 1024,
 }
 
