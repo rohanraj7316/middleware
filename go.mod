@@ -1,4 +1,4 @@
-module libs/middleware
+module github.com/rohanraj7316/middleware
 
 go 1.17
 
