@@ -1,4 +1,4 @@
-package helpers
+package response
 
 import (
 	"net/http"
@@ -22,33 +22,22 @@ type ResponseBodyStruct struct {
 }
 
 // ResponseBody should be
-func ResponseBody(c *fiber.Ctx, statusCode int, message string, data interface{}, err interface{}) error {
+func ResponseBody(c *fiber.Ctx, statusCode int, message string, data interface{}, err error) error {
 	rBody := ResponseBodyStruct{
 		StatusCode: statusCode,
 		Status:     http.StatusText(statusCode),
 		Message:    message,
 		Data:       data,
+		Err: ErrorStruct{
+			Message: err.Error(),
+		},
 	}
 
-	switch t := err.(type) {
-	default:
-		rBody.Err.Message = t.(string)
-	case error:
-		rBody.Err.Message = t.Error()
-	case ErrorStruct:
-		rBody.Err.Code = t.Code
-		rBody.Err.Message = t.Message
-		rBody.Err.Stack = t.Stack
-	case string:
-		rBody.Err.Message = t
-	case fiber.Error:
-		rBody.Err.Code = t.Code
-		rBody.Err.Message = t.Message
-	}
+	errHandler := c.App().ErrorHandler
 
 	iErr := c.Status(statusCode).JSON(rBody)
 	if err != nil {
-		return iErr
+		_ = errHandler(c, iErr)
 	}
 	return nil
 }
