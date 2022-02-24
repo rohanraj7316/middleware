@@ -18,7 +18,8 @@ type Config struct {
 	loggerReqResLogEnable bool
 	// TODO: need to check this why are we using this
 	// loggerCodeFlowLogEnable    bool
-	// loggerReqResLogBodyEnabled flag set for logging all request and response's body
+	// if loggerReqResLogBodyEnabled flag disabled. it wouldn't log
+	// reqHeaders, respHeader, reqBody & resBody.
 	// Optional. Default: true
 	loggerReqResLogBodyEnabled bool
 	requestIdConfig            requestid.Config
@@ -104,19 +105,23 @@ func (c Config) Write(p []byte) (int, error) {
 		for i := 0; i < len(tagArr); i++ {
 			tag := strings.Split(tagArr[i], "=")
 			key := tag[0]
+			value := strings.Join(tag[1:], "=")
+			// avoid request and response body logging if 'loggerReqResLogBodyEnabled' is disabled
 			if c.loggerReqResLogBodyEnabled ||
 				(key != "reqHeaders" && key != "respHeader" && key != "reqBody" && key != "resBody") {
 				lBody = append(lBody, zapcore.Field{
 					Key:    key,
-					String: tag[1],
+					String: value,
+					Type:   zapcore.StringType,
 				})
+			}
 
-				if key == "status" || key == "method" ||
-					key == "path" || key == "latency" {
-					lMessage = append(lMessage, tag[i])
-				}
+			if key == "status" || key == "method" ||
+				key == "path" || key == "latency" {
+				lMessage = append(lMessage, tag[1])
 			}
 		}
+		// TODO: do we need to log status != 200 as error?
 		logger.Info(fmt.Sprintf(constants.REQ_RES_LOG_MSG, lMessage...), lBody...) // [REQ-RES-LOG] 200 POST /health 2.3sec
 	}()
 	return 0, nil
