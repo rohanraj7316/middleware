@@ -14,11 +14,11 @@ type ErrorStruct struct {
 }
 
 type BodyStruct struct {
-	StatusCode int         `json:"statusCode,omitempty"`
-	Status     string      `json:"status,omitempty"`
-	Message    interface{} `json:"message,omitempty"`
-	Err        ErrorStruct `json:"error,omitempty"`
-	Data       interface{} `json:"data,omitempty"`
+	StatusCode int          `json:"statusCode,omitempty"`
+	Status     string       `json:"status,omitempty"`
+	Message    interface{}  `json:"message,omitempty"`
+	Err        *ErrorStruct `json:"error,omitempty"`
+	Data       interface{}  `json:"data,omitempty"`
 }
 
 // ResponseBody should be
@@ -31,7 +31,9 @@ func NewBody(c *fiber.Ctx, statusCode int, message string, data interface{}, err
 	}
 
 	if err != nil {
-		rBody.Err.Message = err.Error()
+		rBody.Err = &ErrorStruct{
+			Message: err.Error(),
+		}
 	}
 
 	errHandler := c.App().ErrorHandler
