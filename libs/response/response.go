@@ -28,9 +28,10 @@ func NewBody(c *fiber.Ctx, statusCode int, message string, data interface{}, err
 		Status:     http.StatusText(statusCode),
 		Message:    message,
 		Data:       data,
-		Err: ErrorStruct{
-			Message: err.Error(),
-		},
+	}
+
+	if err != nil {
+		rBody.Err.Message = err.Error()
 	}
 
 	errHandler := c.App().ErrorHandler
