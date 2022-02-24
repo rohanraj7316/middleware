@@ -21,4 +21,11 @@ var ServerDefault = fiber.Config{
 		}
 		return nil
 	},
+	// Max body size that the server accepts.
+	// -1 will decline any body size
+	//
+	// Default: 5 * 1024 * 1024
+	BodyLimit: 5 * 1024 * 1024,
 }
+
+var ServerStaticDefault = fiber.Static{}
