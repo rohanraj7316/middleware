@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/rohanraj7316/middleware/constants"
-	"github.com/rohanraj7316/middleware/helpers"
+	"github.com/rohanraj7316/middleware/libs/response"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -15,7 +15,7 @@ var ServerDefault = fiber.Config{
 	// Default: below func will be get executed if you don't override it.
 	ErrorHandler: func(c *fiber.Ctx, e error) error {
 		if e != nil {
-			err := helpers.ResponseBody(c, http.StatusInternalServerError, constants.ERR_DEFAULT_MESSAGE, nil, e)
+			err := response.NewBody(c, http.StatusInternalServerError, constants.ERR_DEFAULT_MESSAGE, nil, e)
 			if err != nil {
 				// TODO: add error logging
 			}

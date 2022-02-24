@@ -13,7 +13,7 @@ type ErrorStruct struct {
 	Stack   string `json:"stack,omitempty"`
 }
 
-type ResponseBodyStruct struct {
+type BodyStruct struct {
 	StatusCode int         `json:"statusCode,omitempty"`
 	Status     string      `json:"status,omitempty"`
 	Message    interface{} `json:"message,omitempty"`
@@ -22,8 +22,8 @@ type ResponseBodyStruct struct {
 }
 
 // ResponseBody should be
-func ResponseBody(c *fiber.Ctx, statusCode int, message string, data interface{}, err error) error {
-	rBody := ResponseBodyStruct{
+func NewBody(c *fiber.Ctx, statusCode int, message string, data interface{}, err error) error {
+	rBody := BodyStruct{
 		StatusCode: statusCode,
 		Status:     http.StatusText(statusCode),
 		Message:    message,
