@@ -1,7 +1,7 @@
 package configs
 
 import (
-	"freecharge/rsrc-bp/api/middleware/configs/helpers"
+	"libs/middleware/helpers"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
