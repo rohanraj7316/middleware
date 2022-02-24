@@ -41,6 +41,9 @@ func ResponseBody(c *fiber.Ctx, statusCode int, message string, data interface{}
 		rBody.Err.Stack = t.Stack
 	case string:
 		rBody.Err.Message = t
+	case fiber.Error:
+		rBody.Err.Code = t.Code
+		rBody.Err.Message = t.Message
 	}
 
 	iErr := c.Status(statusCode).JSON(rBody)
