@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"sync"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
@@ -12,15 +14,23 @@ import (
 // 			request and response logging.
 // 			request timeout.
 func New(app *fiber.App, config ...Config) fiber.Handler {
-	cfg := configDefault(config...)
+	var (
+		once sync.Once
+	)
 
-	// tagging all the request
-	app.Use(requestid.New(cfg.requestIdConfig))
-	// adding request and response loggers
-	app.Use(logger.New(cfg.reqResLogger))
+	// Set up middleware layer once
+	// multiple declaration won't update these changes
+	once.Do(func() {
+		cfg := configDefault(config...)
+
+		// tagging all the request
+		app.Use(requestid.New(cfg.requestIdConfig))
+
+		// adding request and response loggers
+		app.Use(logger.New(cfg.reqResLogger))
+	})
 
 	return func(c *fiber.Ctx) error {
-		return fiber.ErrBadGateway
-		// return c.Next()
+		return c.Next()
 	}
 }

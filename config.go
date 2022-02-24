@@ -1,10 +1,15 @@
 package middleware
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
+	flogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/rohanraj7316/logger"
 	"github.com/rohanraj7316/middleware/constants"
+	"go.uber.org/zap/zapcore"
 )
 
 type Config struct {
@@ -17,7 +22,7 @@ type Config struct {
 	// Optional. Default: true
 	loggerReqResLogBodyEnabled bool
 	requestIdConfig            requestid.Config
-	reqResLogger               logger.Config
+	reqResLogger               flogger.Config
 	// Optional. Default: nil
 	Next func(c *fiber.Ctx) bool
 	// requestTimeout is the maximum amount of time to wait for the
@@ -45,15 +50,16 @@ var ConfigDefault = Config{
 	},
 	loggerReqResLogEnable:      true,
 	loggerReqResLogBodyEnabled: true,
-	reqResLogger: logger.Config{
-		Format: "[${time}] ${status} - ${latency} ${method} ${path}\n",
+	reqResLogger: flogger.Config{
+		Format: constants.REQ_RES_RECV_MSG_FORMAT,
 	},
 	requestTimeout: "20s",
 	Next:           nil,
 }
 
 func configDefault(config ...Config) Config {
-	// ConfigDefault.reqResLogger.Output = logger.Writer
+	ConfigDefault.requestTimeout = "20s"
+	ConfigDefault.reqResLogger.Output = ConfigDefault
 	ConfigDefault.reqResLogger.Next = func(c *fiber.Ctx) bool {
 		return !ConfigDefault.loggerReqResLogEnable
 	}
@@ -63,8 +69,6 @@ func configDefault(config ...Config) Config {
 	}
 
 	cfg := config[0]
-
-	ConfigDefault.requestTimeout = "20s"
 
 	return cfg
 }
@@ -89,4 +93,31 @@ func (c *Config) SetReqResBodyLog(reqResBodyLog bool) {
 // Default: 20s.
 func (c *Config) SetRequestTimeout(timeoutStr string) {
 	c.requestTimeout = timeoutStr
+}
+
+func (c Config) Write(p []byte) (int, error) {
+	go func() {
+		lBody := []zapcore.Field{}
+		lMessage := []interface{}{}
+		tagString := string(p)
+		tagArr := strings.Split(tagString, ",")
+		for i := 0; i < len(tagArr); i++ {
+			tag := strings.Split(tagArr[i], "=")
+			key := tag[0]
+			if c.loggerReqResLogBodyEnabled ||
+				(key != "reqHeaders" && key != "respHeader" && key != "reqBody" && key != "resBody") {
+				lBody = append(lBody, zapcore.Field{
+					Key:    key,
+					String: tag[1],
+				})
+
+				if key == "status" || key == "method" ||
+					key == "path" || key == "latency" {
+					lMessage = append(lMessage, tag[i])
+				}
+			}
+		}
+		logger.Info(fmt.Sprintf(constants.REQ_RES_LOG_MSG, lMessage...), lBody...) // [REQ-RES-LOG] 200 POST /health 2.3sec
+	}()
+	return 0, nil
 }
