@@ -9,7 +9,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/rohanraj7316/logger"
 	"github.com/rohanraj7316/middleware/constants"
-	"go.uber.org/zap/zapcore"
 )
 
 type Config struct {
@@ -98,7 +97,7 @@ func (c *Config) SetRequestTimeout(timeoutStr string) {
 
 func (c Config) Write(p []byte) (int, error) {
 	go func() {
-		lBody := []zapcore.Field{}
+		lBody := []logger.Field{}
 		lMessage := []interface{}{}
 		tagString := string(p)
 		tagArr := strings.Split(tagString, ",")
