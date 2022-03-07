@@ -100,7 +100,7 @@ func (c Config) Write(p []byte) (int, error) {
 		lBody := []logger.Field{}
 		lMessage := []interface{}{}
 		tagString := string(p)
-		tagArr := strings.Split(tagString, ",")
+		tagArr := strings.Split(tagString, "#")
 		for i := 0; i < len(tagArr); i++ {
 			tag := strings.Split(tagArr[i], "=")
 			key := tag[0]
