@@ -109,10 +109,9 @@ func (c Config) Write(p []byte) (int, error) {
 			// avoid request and response body logging if 'loggerReqResLogBodyEnabled' is disabled
 			if c.loggerReqResLogBodyEnabled ||
 				(key != "reqHeaders" && key != "respHeader" && key != "reqBody" && key != "resBody") {
-				lBody = append(lBody, zapcore.Field{
-					Key:    key,
-					String: value,
-					Type:   zapcore.StringType,
+				lBody = append(lBody, logger.Field{
+					Key:   key,
+					Value: value,
 				})
 			}
 
