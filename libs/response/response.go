@@ -21,7 +21,7 @@ type BodyStruct struct {
 	Data       interface{}  `json:"data,omitempty"`
 }
 
-// ResponseBody should be
+// NewBody uses BodyStruct to send back the json response
 func NewBody(c *fiber.Ctx, statusCode int, message string, data interface{}, err error) error {
 	rBody := BodyStruct{
 		StatusCode: statusCode,
