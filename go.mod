@@ -4,12 +4,13 @@ go 1.17
 
 require (
 	github.com/gofiber/fiber/v2 v2.28.0
-	github.com/rohanraj7316/logger v0.0.1
+	github.com/rohanraj7316/logger v0.0.2
 )
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
+	github.com/rohanraj7316/httpclient v0.0.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.33.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect

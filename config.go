@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -31,6 +32,7 @@ type Config struct {
 	requestTimeout string
 }
 
+// TODO: req and res and timeout pick from env.
 var ConfigDefault = Config{
 	requestIdConfig: requestid.Config{
 		Header:     constants.REQUEST_ID_HEADER_KEY,
@@ -45,6 +47,8 @@ var ConfigDefault = Config{
 				c.Locals(constants.REQUEST_ID_PROP, rId)
 				return true
 			}
+			rCtx := context.WithValue(c.UserContext(), constants.RequestIDType(constants.REQUEST_ID_PROP), rId)
+			c.SetUserContext(rCtx)
 			return false
 		},
 	},
