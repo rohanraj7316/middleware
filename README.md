@@ -26,3 +26,6 @@ type BodyStruct struct {
 
 wrapper build using [httpclient](https://github.com/rohanraj7316/httpclient). can be used to send http request.
 
+### [validate](libs/validate)
+
+helps in validating request body
