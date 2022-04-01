@@ -3,7 +3,7 @@
 it's a cluster of some pre-required middleware
 ## File Structure
 
-### [config](config/)
+### [config](configs/)
 
 below are the list of default configs:
 
