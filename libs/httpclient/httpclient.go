@@ -1,6 +1,8 @@
 package httpclient
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -38,11 +40,33 @@ func (hClient *HttpClient) Request(c Option) (*http.Response, error) {
 // trigger it from SDK. has an added layer for checking
 // requestId.
 // Note: never create your own context.
-func (hClient *HttpClient) RequestSDK(c OptionSDK) (*http.Response, error) {
+func (hClient *HttpClient) RequestSDK(c OptionSDK) (resBody interface{}, err error) {
 	rID := c.Ctx.Value("requestId")
 	if rID == "" {
 		return nil, fmt.Errorf("'requestId' is missing in the context")
 	}
 
-	return hClient.client.Request(c.Ctx, c.Method, c.Url, c.Header, c.RequestBody)
+	if val, ok := c.Header["Content-Type"]; !ok {
+		c.Header["Content-Type"] = "application/json"
+	} else if val != "application/json" {
+		return nil, fmt.Errorf("invalid `Content-Type`")
+	}
+
+	reqBody, err := json.Marshal(c.RequestBody)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := hClient.client.Request(c.Ctx, c.Method,
+		c.Url, c.Header, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&resBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return resBody, nil
 }

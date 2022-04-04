@@ -22,5 +22,5 @@ type OptionSDK struct {
 	Method      string
 	Url         string
 	Header      map[string]string
-	RequestBody io.Reader
+	RequestBody interface{}
 }
