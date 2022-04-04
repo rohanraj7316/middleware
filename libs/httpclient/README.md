@@ -35,6 +35,20 @@ type Config struct {
 }
 ```
 
+### Option And OptionSDK
+
+both are request options with only context difference.
+
+```
+type OptionSDK struct {
+	Ctx         context.Context
+	Method      string
+	Url         string
+	Header      map[string]string
+	RequestBody io.Reader
+}
+```
+
 ### Request
 
 ```
