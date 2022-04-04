@@ -13,7 +13,8 @@ import (
 
 var v = validator.New()
 
-// Request fiber.Handler help us to validate request.
+// Request fiber.Handler a middleware used to validate
+// request body.
 // reqStruct pointer to your request structure
 // ie: a.Post("/", ValidateRequest(new(CreateServiceRequest)), handler.CreateService)
 func Request(reqStruct interface{}) fiber.Handler {
