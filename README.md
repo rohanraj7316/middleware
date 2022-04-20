@@ -33,3 +33,7 @@ wrapper build using [httpclient](https://github.com/rohanraj7316/httpclient). ca
 ### [validate](libs/validate)
 
 helps in validating request body
+
+### [redisclient](libs/redisclient)
+
+helps in creating connection with redis client
