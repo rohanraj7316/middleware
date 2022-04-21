@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/rohanraj7316/logger"
 )
 
 // GetValue retrieves the value of environment variable named by the key.
@@ -16,7 +17,7 @@ func GetValue(k, d string) string {
 	if v := os.Getenv(k); v != "" {
 		return v
 	}
-	// TODO: add logging when passing default value
+	logger.Error(fmt.Sprintf("[REDISError] empty key: %s", k))
 	return d
 }
 
