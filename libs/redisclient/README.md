@@ -1,20 +1,28 @@
 # Redisclient
 
-Redisclient built to establish connection with redis.
+**redisclient** built to establish connection with redis.
 
 ## Signature
 
 ```
-func New(config Config) (*redis.Client, error)
+func New(config ...Config) (Config, error)
 ```
 
 ## Config
 
+```
 type Config struct {
-	HostName string
-	Port     string
-	Password string
-	DB       int
+	Redis  *redis.Options
+	Client *redis.Client
 }
+```
+## Env-variable
 
-Populate this Config struct from environment and send it to middleware redisclient New() function as a parameter.
+```
+export REDIS_HOST
+export REDIS_PORT
+export REDIS_USERNAME
+export REDIS_PASSWORD
+export REDIS_MAX_RETRIES
+export REDIS_POOL_SIZE
+```
