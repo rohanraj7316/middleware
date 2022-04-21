@@ -8,6 +8,10 @@ it's a cluster of some pre-required middleware
 below are the list of default configs:
 
 - ServerDefault - it's **fiber.Config**
+
+### [constant](constants/)
+
+- TIME_FORMAT - **RFC3339** using this as default time format.
 ### [response](libs/response)
 
 used to structure all the responses in **BodyStruct**
