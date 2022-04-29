@@ -14,6 +14,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
