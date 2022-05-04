@@ -133,7 +133,9 @@ func TestAttachmentMails(t *testing.T) {
 	// ============================================================
 	eBody := &pinpointemail.SendEmailInput{
 		Content: &pinpointemail.EmailContent{
-			Raw: &pinpointemail.RawMessage{},
+			Raw: &pinpointemail.RawMessage{
+				Data: []byte(""),
+			},
 		},
 		Destination: &pinpointemail.Destination{
 			ToAddresses: aws.StringSlice([]string{toEmail}),
