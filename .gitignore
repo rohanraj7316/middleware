@@ -22,4 +22,4 @@ bin/
 # avoid exec files
 *.sh
 
-*.env
+.env
