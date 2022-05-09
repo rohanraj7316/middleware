@@ -1,6 +1,7 @@
 package awspinpoint
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"testing"
@@ -8,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/pinpointemail"
 	env "github.com/joho/godotenv"
+	"gopkg.in/gomail.v2"
 )
 
 const (
@@ -18,7 +20,7 @@ const (
 
 var loadEnv = env.Load
 
-func TestSimpleMails(t *testing.T) {
+func TestSimpleEmails(t *testing.T) {
 	ctx := context.Background()
 
 	// load env config
@@ -58,9 +60,6 @@ func TestSimpleMails(t *testing.T) {
 		t.Errorf("failed to create client %s", err.Error())
 	}
 
-	// ============================================================
-	// 					sending simple email
-	// ============================================================
 	eBody := &pinpointemail.SendEmailInput{
 		Content: &pinpointemail.EmailContent{
 			Simple: &pinpointemail.Message{
@@ -80,7 +79,7 @@ func TestSimpleMails(t *testing.T) {
 		FromEmailAddress: aws.String(fromEmail),
 	}
 
-	out, err := eClient.Mail(ctx, eBody)
+	out, err := eClient.SendEmail(ctx, eBody)
 	if err != nil {
 		t.Errorf("error in sending email: %s", err.Error())
 	}
@@ -88,7 +87,7 @@ func TestSimpleMails(t *testing.T) {
 	t.Log(out)
 }
 
-func TestAttachmentMails(t *testing.T) {
+func TestAttachmentEmails(t *testing.T) {
 	ctx := context.Background()
 
 	// load env config
@@ -128,14 +127,20 @@ func TestAttachmentMails(t *testing.T) {
 		t.Errorf("failed to create client %s", err.Error())
 	}
 
-	// ============================================================
-	// 				sending email with attachments
-	// ============================================================
+	msg := gomail.NewMessage()
+	msg.SetHeader("Subject", "TESTING ATTACHMENT EMAIL")
+	msg.SetBody("text/plain", "this is just a sample test email. pls, don't reply")
+	msg.Attach("./attachments/sample_txt.txt")
+
+	var emailRaw bytes.Buffer
+	_, err = msg.WriteTo(&emailRaw)
+	if err != nil {
+		t.Errorf("failed to dump msg to bytes buffer")
+	}
+
 	eBody := &pinpointemail.SendEmailInput{
 		Content: &pinpointemail.EmailContent{
-			Raw: &pinpointemail.RawMessage{
-				Data: []byte(""),
-			},
+			Raw: &pinpointemail.RawMessage{Data: emailRaw.Bytes()},
 		},
 		Destination: &pinpointemail.Destination{
 			ToAddresses: aws.StringSlice([]string{toEmail}),
@@ -143,7 +148,7 @@ func TestAttachmentMails(t *testing.T) {
 		FromEmailAddress: aws.String(fromEmail),
 	}
 
-	out, err := eClient.Mail(ctx, eBody)
+	out, err := eClient.SendEmail(ctx, eBody)
 	if err != nil {
 		t.Errorf("error in sending email: %s", err.Error())
 	}
