@@ -20,7 +20,8 @@ func New(config ...Config) (Config, error) {
 	return cfg, nil
 }
 
-func (c Config) Mail(ctx context.Context, in *pinpointemail.SendEmailInput) (out *pinpointemail.SendEmailOutput, err error) {
+func (c Config) SendEmail(ctx context.Context, in *pinpointemail.SendEmailInput) (out *pinpointemail.SendEmailOutput,
+	err error) {
 	out, err = c.EmailClient.SendEmailWithContext(ctx, in)
 	if err != nil {
 		return out, err
