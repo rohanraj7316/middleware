@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"sync"
 
 	"github.com/gofiber/fiber/v2"
@@ -33,8 +34,15 @@ func New(app *fiber.App, config ...Config) fiber.Handler {
 
 	return func(c *fiber.Ctx) error {
 		// setting up relayback headers.
-		for i := 0; i < len(cfg.listOfRelayBackHeader); i++ {
-			c.Vary(cfg.listOfRelayBackHeader[i])
+		for i := 0; i < len(cfg.relaybackHeader); i++ {
+			c.Vary(cfg.relaybackHeader[i])
+		}
+
+		for i := 0; i < len(cfg.relaybackHeader); i++ {
+			if key, val := cfg.relaybackHeader[i], c.Get(cfg.relaybackHeader[i]); val != "" {
+				rCtx := context.WithValue(c.UserContext(), key, val)
+				c.SetUserContext(rCtx)
+			}
 		}
 
 		return c.Next()

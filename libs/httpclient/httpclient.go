@@ -5,12 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/rohanraj7316/httpclient"
 )
 
 type HttpClient struct {
 	client *httpclient.HttpClient
+
+	passOnHeader []string
 }
 
 // New configure httpclient with the Config passed.
@@ -25,6 +28,20 @@ func New(config ...httpclient.Config) (*HttpClient, error) {
 	return &HttpClient{
 		client: client,
 	}, nil
+}
+
+// responsible for updating 'hClient' flag.
+// Default: "".
+// send '#' seperated string.
+// ie: "X-Auth-Key#X-Auth"
+func (hClient *HttpClient) SetPassOnHeaders(headers string) {
+	hArr := strings.Split(headers, "#")
+
+	// trim the keys which are passed
+	for i := 0; i < len(hArr); i++ {
+		hClient.passOnHeader = append(hClient.passOnHeader,
+			strings.TrimSpace(hArr[i]))
+	}
 }
 
 // Request should be used for sending http request with in
@@ -50,6 +67,12 @@ func (hClient *HttpClient) RequestSDK(c OptionSDK) (resBody interface{}, err err
 		c.Header["Content-Type"] = "application/json"
 	} else if val != "application/json" {
 		return nil, fmt.Errorf("invalid `Content-Type`")
+	}
+
+	// adding pass on headers.
+	for i := 0; i < len(hClient.passOnHeader); i++ {
+		hKey := hClient.passOnHeader[i]
+		c.Header[hKey] = c.Ctx.Value(hKey).(string)
 	}
 
 	reqBody, err := json.Marshal(c.RequestBody)
