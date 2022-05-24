@@ -24,12 +24,15 @@ type Config struct {
 	loggerReqResLogBodyEnabled bool
 	requestIdConfig            requestid.Config
 	reqResLogger               flogger.Config
-	// Optional. Default: nil
-	Next func(c *fiber.Ctx) bool
 	// requestTimeout is the maximum amount of time to wait for the
 	// request to send back the response.
 	// Default: 20sec
 	requestTimeout string
+
+	listOfRelayBackHeader []string
+
+	// Optional. Default: nil
+	Next func(c *fiber.Ctx) bool
 }
 
 // TODO: req and res and timeout pick from env.
@@ -97,6 +100,14 @@ func (c *Config) SetReqResBodyLog(reqResBodyLog bool) {
 // Default: 20s.
 func (c *Config) SetRequestTimeout(timeoutStr string) {
 	c.requestTimeout = timeoutStr
+}
+
+// responsible for updating 'listOfRelayBackHeader' flag.
+// Default: "".
+// send '#' seperated string.
+// ie: "X-Auth-Key#X-Auth"
+func (c *Config) SetRelayBackHeaders(headers string) {
+	c.listOfRelayBackHeader = strings.Split(headers, "#")
 }
 
 func (c Config) Write(p []byte) (int, error) {
