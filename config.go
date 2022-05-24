@@ -28,8 +28,15 @@ type Config struct {
 	// request to send back the response.
 	// Default: 20sec
 	requestTimeout string
-
-	listOfRelayBackHeader []string
+	// relaybackHeader    []string
+	// relaybackHeader are the headers which we need
+	// to relay back in the response too.
+	// Optional. Default: []
+	relaybackHeader []string
+	// passOnHeader    []string
+	// passOnHeader passed on in the future requests.
+	// Optional. Default: []
+	passOnHeader []string
 
 	// Optional. Default: nil
 	Next func(c *fiber.Ctx) bool
@@ -102,12 +109,32 @@ func (c *Config) SetRequestTimeout(timeoutStr string) {
 	c.requestTimeout = timeoutStr
 }
 
-// responsible for updating 'listOfRelayBackHeader' flag.
+// responsible for updating 'relaybackHeader' flag.
+// Default: "".
+// using '#' as string seperator.
+// ie: "X-Auth-Key#X-Auth# x-access-key "
+func (c *Config) SetRelayBackHeaders(headers string) {
+	hArr := strings.Split(headers, "#")
+
+	// trim the keys which are passed
+	for i := 0; i < len(hArr); i++ {
+		c.relaybackHeader = append(c.relaybackHeader,
+			strings.TrimSpace(hArr[i]))
+	}
+}
+
+// responsible for updating 'passOnHeader' flag.
 // Default: "".
 // send '#' seperated string.
-// ie: "X-Auth-Key#X-Auth"
-func (c *Config) SetRelayBackHeaders(headers string) {
-	c.listOfRelayBackHeader = strings.Split(headers, "#")
+// ie: "X-Auth-Key# X-Auth"
+func (c *Config) SetPassOnHeaders(headers string) {
+	hArr := strings.Split(headers, "#")
+
+	// trim the keys which are passed
+	for i := 0; i < len(hArr); i++ {
+		c.passOnHeader = append(c.passOnHeader,
+			strings.TrimSpace(hArr[i]))
+	}
 }
 
 func (c Config) Write(p []byte) (int, error) {
