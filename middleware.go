@@ -15,13 +15,14 @@ import (
 // 			request timeout.
 func New(app *fiber.App, config ...Config) fiber.Handler {
 	var (
+		cfg  Config
 		once sync.Once
 	)
 
 	// Set up middleware layer once
 	// multiple declaration won't update these changes
 	once.Do(func() {
-		cfg := configDefault(config...)
+		cfg = configDefault(config...)
 
 		// tagging all the request
 		app.Use(requestid.New(cfg.requestIdConfig))
@@ -31,6 +32,11 @@ func New(app *fiber.App, config ...Config) fiber.Handler {
 	})
 
 	return func(c *fiber.Ctx) error {
+		// setting up relayback headers.
+		for i := 0; i < len(cfg.listOfRelayBackHeader); i++ {
+			c.Vary(cfg.listOfRelayBackHeader[i])
+		}
+
 		return c.Next()
 	}
 }
