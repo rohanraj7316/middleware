@@ -38,8 +38,8 @@ func New(app *fiber.App, config ...Config) fiber.Handler {
 			c.Vary(cfg.relaybackHeader[i])
 		}
 
-		for i := 0; i < len(cfg.relaybackHeader); i++ {
-			if key, val := cfg.relaybackHeader[i], c.Get(cfg.relaybackHeader[i]); val != "" {
+		for i := 0; i < len(cfg.passOnHeader); i++ {
+			if key, val := cfg.passOnHeader[i], c.Get(cfg.passOnHeader[i]); val != "" {
 				rCtx := context.WithValue(c.UserContext(), key, val)
 				c.SetUserContext(rCtx)
 			}
