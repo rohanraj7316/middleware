@@ -37,3 +37,7 @@ helps in validating request body
 ### [redisclient](libs/redisclient)
 
 helps in creating connection with redis client
+
+## [elasticclient] (libs/elasticclient)
+
+helps in creating connection with elasticsearch
