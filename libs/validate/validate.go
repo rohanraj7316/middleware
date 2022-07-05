@@ -22,23 +22,27 @@ func Request(reqStruct interface{}) fiber.Handler {
 		rBody := reqStruct
 
 		if reflect.ValueOf(reqStruct).Kind() != reflect.Ptr {
-			err := fmt.Errorf("[ValidationError] pass pointer as 'reqStruct' type")
-			return response.NewBody(c, http.StatusInternalServerError, "[ValidationError] unexpected 'reqStruct' type", nil, err)
+			err := fmt.Errorf("pass 'reqStruct' as pointer")
+			return response.NewBody(c, http.StatusInternalServerError, "Invalid Request Body", nil, err)
 		}
 
 		if err := c.BodyParser(&rBody); err != nil {
-			return response.NewBody(c, http.StatusBadRequest, "[ValidationError] failed to parse request body", nil, err)
+			return response.NewBody(c, http.StatusBadRequest, "Invalid Request Body", nil, err)
 		}
 
 		err := v.Struct(rBody)
 		if err != nil {
 			var vErrs strings.Builder
 			for _, err := range err.(validator.ValidationErrors) {
-				vErrs.WriteString(fmt.Sprintf("key: %s | val: %s | tag: %s; ", err.Field(), err.Value(), err.Tag()))
+				if vErrs.Len() == 0 {
+					vErrs.WriteString(fmt.Sprintf("%s: %s;", err.Field(), err.Tag()))
+				}
+
+				vErrs.WriteString(fmt.Sprintf(" %s: %s;", err.Field(), err.Tag()))
 			}
 
-			vErrsMsg := fmt.Errorf("[ValidationError] %s", &vErrs)
-			return response.NewBody(c, http.StatusBadRequest, "failed to validated request body", nil, vErrsMsg)
+			vErrsMsg := fmt.Errorf("%s", &vErrs)
+			return response.NewBody(c, http.StatusBadRequest, "Invalid Request Body", nil, vErrsMsg)
 		}
 		return c.Next()
 	}
