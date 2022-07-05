@@ -34,7 +34,7 @@ func Request(reqStruct interface{}) fiber.Handler {
 		if err != nil {
 			var vErrs strings.Builder
 			for _, err := range err.(validator.ValidationErrors) {
-				vErrs.WriteString(fmt.Sprintf("key: %s | val: %s | tag: %s; ", err.Field(), err.Tag(), err.Value()))
+				vErrs.WriteString(fmt.Sprintf("key: %s | val: %s | tag: %s; ", err.Field(), err.Value(), err.Tag()))
 			}
 
 			vErrsMsg := fmt.Errorf("[ValidationError] %s", &vErrs)
