@@ -33,15 +33,17 @@ func New(app *fiber.App, config ...Config) fiber.Handler {
 	})
 
 	return func(c *fiber.Ctx) error {
-		// setting up relayback headers.
-		for i := 0; i < len(cfg.relaybackHeader); i++ {
-			c.Vary(cfg.relaybackHeader[i])
-		}
 
-		for i := 0; i < len(cfg.passOnHeader); i++ {
-			if key, val := cfg.passOnHeader[i], c.Get(cfg.passOnHeader[i]); val != "" {
+		// setting up headers
+		reqHeaders := c.GetReqHeaders()
+		for key, val := range reqHeaders {
+			if _, ok := cfg.passOnHeader[key]; ok {
 				rCtx := context.WithValue(c.UserContext(), key, val)
 				c.SetUserContext(rCtx)
+			}
+
+			if _, ok := cfg.relaybackHeader[key]; ok {
+				c.Set(key, val)
 			}
 		}
 

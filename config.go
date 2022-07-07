@@ -32,11 +32,11 @@ type Config struct {
 	// relaybackHeader are the headers which we need
 	// to relay back in the response too.
 	// Optional. Default: []
-	relaybackHeader []string
+	relaybackHeader map[string]bool
 	// passOnHeader    []string
 	// passOnHeader passed on in the future requests.
 	// Optional. Default: []
-	passOnHeader []string
+	passOnHeader map[string]bool
 
 	// Optional. Default: nil
 	Next func(c *fiber.Ctx) bool
@@ -44,6 +44,8 @@ type Config struct {
 
 // TODO: req and res and timeout pick from env.
 var ConfigDefault = Config{
+	relaybackHeader: map[string]bool{},
+	passOnHeader:    map[string]bool{},
 	requestIdConfig: requestid.Config{
 		Header:     constants.REQUEST_ID_HEADER_KEY,
 		ContextKey: constants.REQUEST_ID_PROP,
@@ -118,8 +120,10 @@ func (c *Config) SetRelayBackHeaders(headers string) {
 
 	// trim the keys which are passed
 	for i := 0; i < len(hArr); i++ {
-		c.relaybackHeader = append(c.relaybackHeader,
-			strings.TrimSpace(hArr[i]))
+		val := strings.TrimSpace(hArr[i])
+		if _, ok := c.relaybackHeader[val]; !ok {
+			c.relaybackHeader[val] = true
+		}
 	}
 }
 
@@ -132,8 +136,10 @@ func (c *Config) SetPassOnHeaders(headers string) {
 
 	// trim the keys which are passed
 	for i := 0; i < len(hArr); i++ {
-		c.passOnHeader = append(c.passOnHeader,
-			strings.TrimSpace(hArr[i]))
+		val := strings.TrimSpace(hArr[i])
+		if _, ok := c.passOnHeader[val]; !ok {
+			c.relaybackHeader[val] = true
+		}
 	}
 }
 
