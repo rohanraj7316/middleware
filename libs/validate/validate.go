@@ -42,7 +42,11 @@ func Request(reqStruct interface{}) fiber.Handler {
 		if err != nil {
 			var vErrs strings.Builder
 			for _, err := range err.(validator.ValidationErrors) {
-				vErrs.WriteString(fmt.Sprintf(" %s: %s;", err.Field(), err.Tag()))
+				if vErrs.Len() == 0 {
+					vErrs.WriteString(fmt.Sprintf("%s: %s;", err.Field(), err.Tag()))
+				} else {
+					vErrs.WriteString(fmt.Sprintf(" %s: %s;", err.Field(), err.Tag()))
+				}
 			}
 
 			vErrsMsg := fmt.Errorf("%s", &vErrs)
