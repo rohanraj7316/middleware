@@ -18,16 +18,17 @@ var v = validator.New()
 // reqStruct pointer to your request structure
 // ie: a.Post("/", ValidateRequest(new(CreateServiceRequest)), handler.CreateService)
 func Request(reqStruct interface{}) fiber.Handler {
+
+	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		if name == "-" {
+			return ""
+		}
+		return name
+	})
+
 	return func(c *fiber.Ctx) error {
 		rBody := reqStruct
-
-		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
-			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
-			if name == "-" {
-				return ""
-			}
-			return name
-		})
 
 		if reflect.ValueOf(reqStruct).Kind() != reflect.Ptr {
 			err := fmt.Errorf("pass 'reqStruct' as pointer")
