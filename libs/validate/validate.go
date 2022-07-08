@@ -20,6 +20,7 @@ var v = validator.New()
 func Request(reqStruct interface{}) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		rBody := reqStruct
+
 		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
 			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
 			if name == "-" {
@@ -27,6 +28,7 @@ func Request(reqStruct interface{}) fiber.Handler {
 			}
 			return name
 		})
+
 		if reflect.ValueOf(reqStruct).Kind() != reflect.Ptr {
 			err := fmt.Errorf("pass 'reqStruct' as pointer")
 			return response.NewBody(c, http.StatusInternalServerError, "Invalid Request Body", nil, err)
