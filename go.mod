@@ -3,8 +3,8 @@ module github.com/rohanraj7316/middleware
 go 1.17
 
 require (
-	github.com/go-playground/validator/v10 v10.10.1
-	github.com/gofiber/fiber/v2 v2.32.0
+	github.com/go-playground/validator/v10 v10.11.0
+	github.com/gofiber/fiber/v2 v2.35.0
 	github.com/rohanraj7316/logger v0.0.2
 )
 
@@ -33,7 +33,7 @@ require (
 	github.com/klauspost/compress v1.15.1 // indirect
 	github.com/rohanraj7316/httpclient v0.0.1
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.35.0 // indirect
+	github.com/valyala/fasthttp v1.38.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
