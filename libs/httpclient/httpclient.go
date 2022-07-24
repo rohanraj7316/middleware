@@ -12,8 +12,10 @@ import (
 
 type HttpClient struct {
 	client *httpclient.HttpClient
-
-	passOnHeader []string
+	// passOnHeader    map[string]bool
+	// passOnHeader passed on in the future requests.
+	// Optional. Default: [empty map]
+	passOnHeader map[string]bool
 }
 
 // New configure httpclient with the Config passed.
@@ -39,8 +41,11 @@ func (hClient *HttpClient) SetPassOnHeaders(headers string) {
 
 	// trim the keys which are passed
 	for i := 0; i < len(hArr); i++ {
-		hClient.passOnHeader = append(hClient.passOnHeader,
-			strings.TrimSpace(hArr[i]))
+		val := strings.TrimSpace(hArr[i])
+
+		if _, ok := hClient.passOnHeader[val]; !ok {
+			hClient.passOnHeader[val] = true
+		}
 	}
 }
 
@@ -70,9 +75,8 @@ func (hClient *HttpClient) RequestSDK(c OptionSDK) (resBody interface{}, err err
 	}
 
 	// adding pass on headers.
-	for i := 0; i < len(hClient.passOnHeader); i++ {
-		hKey := hClient.passOnHeader[i]
-		c.Header[hKey] = c.Ctx.Value(hKey).(string)
+	for key := range hClient.passOnHeader {
+		c.Header[key] = c.Ctx.Value(key).(string)
 	}
 
 	reqBody, err := json.Marshal(c.RequestBody)

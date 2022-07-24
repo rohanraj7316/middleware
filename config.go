@@ -28,14 +28,14 @@ type Config struct {
 	// request to send back the response.
 	// Default: 20sec
 	requestTimeout string
-	// relaybackHeader    []string
+	// relaybackHeader    map[string]bool
 	// relaybackHeader are the headers which we need
 	// to relay back in the response too.
-	// Optional. Default: []
+	// Optional. Default: [empty map]
 	relaybackHeader map[string]bool
-	// passOnHeader    []string
+	// passOnHeader    map[string]bool
 	// passOnHeader passed on in the future requests.
-	// Optional. Default: []
+	// Optional. Default: [empty map]
 	passOnHeader map[string]bool
 
 	// Optional. Default: nil
@@ -138,7 +138,7 @@ func (c *Config) SetPassOnHeaders(headers string) {
 	for i := 0; i < len(hArr); i++ {
 		val := strings.TrimSpace(hArr[i])
 		if _, ok := c.passOnHeader[val]; !ok {
-			c.relaybackHeader[val] = true
+			c.passOnHeader[val] = true
 		}
 	}
 }

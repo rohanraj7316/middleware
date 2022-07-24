@@ -38,6 +38,15 @@ var ServerDefault = fiber.Config{
 	//
 	// Default: 5 * 1024 * 1024 = 5mb
 	BodyLimit: 5 * 1024 * 1024,
+	// When set to true, disables header normalization.
+	// By default all header names are normalized: conteNT-tYPE -> Content-Type.
+	//
+	// Default: false
+	DisableHeaderNormalizing: true,
+	// When set to true, it will not print out the «Fiber» ASCII art and listening address.
+	//
+	// Default: false
+	DisableStartupMessage: true,
 }
 
 var ServerStaticDefault = fiber.Static{}
