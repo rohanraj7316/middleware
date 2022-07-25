@@ -77,7 +77,12 @@ func (hClient *HttpClient) RequestSDK(c OptionSDK) (resBody interface{}, err err
 
 	// adding pass on headers.
 	for key := range hClient.passOnHeader {
-		c.Header[key] = c.Ctx.Value(key).(string)
+		pHVal, ok := c.Ctx.Value(key).(string)
+		if !ok {
+			continue
+		}
+
+		c.Header[key] = pHVal
 	}
 
 	reqBody, err := json.Marshal(c.RequestBody)
