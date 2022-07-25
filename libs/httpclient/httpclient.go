@@ -28,7 +28,8 @@ func New(config ...httpclient.Config) (*HttpClient, error) {
 	}
 
 	return &HttpClient{
-		client: client,
+		client:       client,
+		passOnHeader: map[string]bool{},
 	}, nil
 }
 
