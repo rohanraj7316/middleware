@@ -21,8 +21,7 @@ type Config struct {
 ```
 export REDIS_HOST
 export REDIS_PORT
-export REDIS_USERNAME
-export REDIS_PASSWORD
+export REDIS_AUTH
 export REDIS_MAX_RETRIES
 export REDIS_POOL_SIZE
 ```
