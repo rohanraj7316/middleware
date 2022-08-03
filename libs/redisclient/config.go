@@ -2,6 +2,7 @@ package redisclient
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"os"
 	"strconv"
@@ -31,12 +32,12 @@ var ConfigDefault = Config{
 		OnConnect: func(ctx context.Context, cn *redis.Conn) error {
 			return nil
 		},
+		TLSConfig: &tls.Config{},
 	},
 }
 
 func configDefault(config ...Config) (Config, error) {
-	ConfigDefault.Redis.Username = GetValue("REDIS_USERNAME", "")
-	ConfigDefault.Redis.Password = GetValue("REDIS_PASSWORD", "")
+	ConfigDefault.Redis.Password = GetValue("REDIS_AUTH", "")
 	ConfigDefault.Redis.Addr = fmt.Sprintf("%s:%s", GetValue("REDIS_HOST", ""), GetValue("REDIS_PORT", ""))
 
 	mRetries, err := strconv.Atoi(GetValue("REDIS_MAX_RETRIES", "5"))
