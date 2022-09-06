@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	flogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/fiber/v2/utils"
 	"github.com/rohanraj7316/logger"
 	"github.com/rohanraj7316/middleware/constants"
 )
@@ -51,17 +52,21 @@ var ConfigDefault = Config{
 		ContextKey: constants.REQUEST_ID_PROP,
 		Next: func(c *fiber.Ctx) bool {
 			rId := c.Get(constants.REQUEST_ID_HEADER_KEY)
-			if rId != "" {
-				// Set new id to response header
-				c.Set(constants.REQUEST_ID_HEADER_KEY, rId)
-
-				// Add the request ID to locals
-				c.Locals(constants.REQUEST_ID_PROP, rId)
-				return true
+			if rId == "" {
+				rId = utils.UUIDv4()
 			}
+
+			// Set new id to response header
+			c.Set(constants.REQUEST_ID_HEADER_KEY, rId)
+
+			// Add the request ID to locals
+			c.Locals(constants.REQUEST_ID_PROP, rId)
+
+			// value is empty
 			rCtx := context.WithValue(c.UserContext(), constants.RequestIDType(constants.REQUEST_ID_PROP), rId)
 			c.SetUserContext(rCtx)
-			return false
+
+			return true
 		},
 	},
 	loggerReqResLogEnable:      true,
