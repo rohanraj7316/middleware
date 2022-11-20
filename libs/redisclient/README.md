@@ -14,6 +14,7 @@ func New(config ...Config) (Config, error)
 type Config struct {
 	Redis  *redis.Options
 	Client *redis.Client
+	Prefix string
 }
 ```
 ## Env-variable
@@ -22,6 +23,7 @@ type Config struct {
 export REDIS_HOST
 export REDIS_PORT
 export REDIS_AUTH
+export REDIS_PREFIX
 export REDIS_MAX_RETRIES
 export REDIS_POOL_SIZE
 ```
