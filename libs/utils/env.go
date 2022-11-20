@@ -16,14 +16,23 @@ var GetValue = func(k, d string) string {
 	return d
 }
 
-func RequiredFields(rFields []string) map[string]string {
+// requiredFields - list of fields which are mandates
+// unrequiredFields - list of fields which are not mandates
+// returns a map with rFields values and uFields values
+func EnvData(requiredFields, unrequiredFields []string) map[string]string {
 	result := map[string]string{}
 
-	for _, eKey := range rFields {
+	for _, eKey := range requiredFields {
 		if eVal := os.Getenv(eKey); eVal != "" {
 			result[eKey] = eVal
 		} else {
 			panic(fmt.Sprintf("missing required env: %s", eKey))
+		}
+	}
+
+	for _, eKey := range unrequiredFields {
+		if eVal := os.Getenv(eKey); eVal != "" {
+			result[eKey] = eVal
 		}
 	}
 
