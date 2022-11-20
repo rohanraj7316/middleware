@@ -63,7 +63,7 @@ var ConfigDefault = Config{
 			c.Locals(constants.REQUEST_ID_PROP, rId)
 
 			// value is empty
-			rCtx := context.WithValue(c.UserContext(), constants.RequestIDType(constants.REQUEST_ID_PROP), rId)
+			rCtx := context.WithValue(c.UserContext(), constants.REQUEST_ID_PROP, rId)
 			c.SetUserContext(rCtx)
 
 			return true
@@ -79,6 +79,15 @@ var ConfigDefault = Config{
 }
 
 func configDefault(config ...Config) Config {
+	ConfigDefault.relaybackHeader = map[string]bool{
+		constants.REQUEST_APP_ID_HEADER_KEY:         true,
+		constants.REQUEST_APP_SECRET_HEADER_KEY:     true,
+		constants.REQUEST_MSG_GROUP_HEADER_KEY:      true,
+		constants.REQUEST_MSG_SEQUENCE_HEADER_KEY:   true,
+		constants.REQUEST_SOURCE_HEADER_KEY:         true,
+		constants.REQUEST_SOURCE_CHANNEL_HEADER_KEY: true,
+	}
+
 	ConfigDefault.requestTimeout = "20s"
 	ConfigDefault.reqResLogger.Output = ConfigDefault
 	ConfigDefault.reqResLogger.Next = func(c *fiber.Ctx) bool {
