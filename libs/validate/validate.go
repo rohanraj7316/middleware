@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -18,15 +19,6 @@ var v = validator.New()
 // reqStruct pointer to your request structure
 // ie: a.Post("/", ValidateRequest(new(CreateServiceRequest)), handler.CreateService)
 func Request(reqStruct interface{}) fiber.Handler {
-
-	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
-		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
-		if name == "-" {
-			return ""
-		}
-		return name
-	})
-
 	return func(c *fiber.Ctx) error {
 		rBody := reqStruct
 
@@ -39,20 +31,72 @@ func Request(reqStruct interface{}) fiber.Handler {
 			return response.NewBody(c, http.StatusBadRequest, "Invalid Request Body", nil, err)
 		}
 
-		err := v.Struct(rBody)
-		if err != nil {
-			var vErrs strings.Builder
-			for _, err := range err.(validator.ValidationErrors) {
-				if vErrs.Len() == 0 {
-					vErrs.WriteString(fmt.Sprintf("%s: %s;", err.Field(), err.Tag()))
-				} else {
-					vErrs.WriteString(fmt.Sprintf(" %s: %s;", err.Field(), err.Tag()))
-				}
-			}
-
-			vErrsMsg := fmt.Errorf("%s", &vErrs)
-			return response.NewBody(c, http.StatusBadRequest, "Invalid Request Body", nil, vErrsMsg)
+		err := ValidateStruct(rBody)
+		if len(err) > 0 {
+			return response.NewBody(c, http.StatusBadRequest, "Invalid Request Body", nil, err)
 		}
+
 		return c.Next()
 	}
+}
+
+func ValidateStruct(rBody interface{}) []map[string]interface{} {
+	var (
+		once  sync.Once
+		vErrs []map[string]interface{}
+	)
+
+	once.Do(func() {
+		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+			if name == "-" {
+				return ""
+			}
+			return name
+		})
+	})
+
+	errs := v.Struct(rBody)
+	for _, err := range errs.(validator.ValidationErrors) {
+		// NOTE: just for testing out the values
+		// fmt.Println(err.Namespace()) // can differ when a custom TagNameFunc is registered or
+		// fmt.Println(err.Field())     // by passing alt name to ReportError like below
+		// fmt.Println(err.StructNamespace())
+		// fmt.Println(err.StructField())
+		// fmt.Println(err.Tag())
+		// fmt.Println(err.ActualTag())
+		// fmt.Println(err.Kind())
+		// fmt.Println(err.Type())
+		// fmt.Println(err.Value())
+		// fmt.Println(err.Param())
+		// fmt.Println()
+
+		vErr := map[string]interface{}{
+			"field": err.Field(),
+			"type":  err.Type(),
+			"value": err.Value(),
+		}
+
+		if err.Tag() == "required" {
+			vErr["msg"] = fmt.Sprintf("%s Is Mandatory", err.Field())
+		} else if err.Tag() == "alphanum" {
+			vErr["msg"] = fmt.Sprintf("%s Should Be Alphanumeric", err.Field())
+		} else if err.Tag() == "max" {
+			vErr["msg"] = fmt.Sprintf("%s Can Be Of Maximum %s Character", err.Field(), err.Param())
+		} else if err.Tag() == "eqfield" {
+			vErr["msg"] = fmt.Sprintf("%s Does Not Match With %s", err.Field(), err.Param())
+		} else if err.Tag() == "min" {
+			vErr["msg"] = fmt.Sprintf("%s Can Be Of Minimum %s Character", err.Field(), err.Param())
+		} else if err.Tag() == "email" {
+			vErr["msg"] = fmt.Sprintf("%s Should Be A Valid Email", err.Field())
+		} else if err.Tag() == "len" {
+			vErr["msg"] = fmt.Sprintf("%s Length Should Be %s", err.Field(), err.Param())
+		} else {
+			vErr["msg"] = fmt.Sprintf("Failed Validation For %s", err.Field())
+		}
+
+		vErrs = append(vErrs, vErr)
+	}
+
+	return vErrs
 }
