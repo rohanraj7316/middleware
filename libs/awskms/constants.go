@@ -1,0 +1,6 @@
+package awskms
+
+const (
+	ENV_AWS_DEFAULT_REGION = "AWS_DEFAULT_REGION"
+	ENV_AWS_KMS_KEY_ID     = "AWS_KMS_KEY_ID"
+)
