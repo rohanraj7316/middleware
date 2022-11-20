@@ -6,23 +6,16 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// TODO: can add multiple fields
-type ErrorStruct struct {
-	Code    int    `json:"code,omitempty"`
-	Message string `json:"message,omitempty"`
-	Stack   string `json:"stack,omitempty"`
-}
-
 type BodyStruct struct {
-	StatusCode int          `json:"statusCode,omitempty"`
-	Status     string       `json:"status,omitempty"`
-	Message    interface{}  `json:"message,omitempty"`
-	Err        *ErrorStruct `json:"error,omitempty"`
-	Data       interface{}  `json:"data,omitempty"`
+	StatusCode int         `json:"statusCode,omitempty"`
+	Status     string      `json:"status,omitempty"`
+	Message    interface{} `json:"message,omitempty"`
+	Err        interface{} `json:"error,omitempty"`
+	Data       interface{} `json:"data,omitempty"`
 }
 
 // NewBody uses BodyStruct to send back the json response
-func NewBody(c *fiber.Ctx, statusCode int, message string, data interface{}, err error) error {
+func NewBody(c *fiber.Ctx, statusCode int, message interface{}, data interface{}, err interface{}) error {
 	rBody := BodyStruct{
 		StatusCode: statusCode,
 		Status:     http.StatusText(statusCode),
@@ -31,8 +24,15 @@ func NewBody(c *fiber.Ctx, statusCode int, message string, data interface{}, err
 	}
 
 	if err != nil {
-		rBody.Err = &ErrorStruct{
-			Message: err.Error(),
+		switch t := err.(type) {
+		case error:
+			rBody.Err = t.Error()
+		case string:
+			rBody.Err = t
+		case []byte:
+			rBody.Err = string(t)
+		case interface{}:
+			rBody.Err = t
 		}
 	}
 
