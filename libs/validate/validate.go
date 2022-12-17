@@ -57,45 +57,47 @@ func ValidateStruct(rBody interface{}) []map[string]interface{} {
 	})
 
 	errs := v.Struct(rBody)
-	for _, err := range errs.(validator.ValidationErrors) {
-		// NOTE: just for testing out the values
-		// fmt.Println(err.Namespace()) // can differ when a custom TagNameFunc is registered or
-		// fmt.Println(err.Field())     // by passing alt name to ReportError like below
-		// fmt.Println(err.StructNamespace())
-		// fmt.Println(err.StructField())
-		// fmt.Println(err.Tag())
-		// fmt.Println(err.ActualTag())
-		// fmt.Println(err.Kind())
-		// fmt.Println(err.Type())
-		// fmt.Println(err.Value())
-		// fmt.Println(err.Param())
-		// fmt.Println()
+	if errs != nil {
+		for _, err := range errs.(validator.ValidationErrors) {
+			// NOTE: just for testing out the values
+			// fmt.Println(err.Namespace()) // can differ when a custom TagNameFunc is registered or
+			// fmt.Println(err.Field())     // by passing alt name to ReportError like below
+			// fmt.Println(err.StructNamespace())
+			// fmt.Println(err.StructField())
+			// fmt.Println(err.Tag())
+			// fmt.Println(err.ActualTag())
+			// fmt.Println(err.Kind())
+			// fmt.Println(err.Type())
+			// fmt.Println(err.Value())
+			// fmt.Println(err.Param())
+			// fmt.Println()
 
-		vErr := map[string]interface{}{
-			"field": err.Field(),
-			"type":  err.Type(),
-			"value": err.Value(),
+			vErr := map[string]interface{}{
+				"field": err.Field(),
+				"type":  err.Type(),
+				"value": err.Value(),
+			}
+
+			if err.Tag() == "required" {
+				vErr["msg"] = fmt.Sprintf("%s Is Mandatory", err.Field())
+			} else if err.Tag() == "alphanum" {
+				vErr["msg"] = fmt.Sprintf("%s Should Be Alphanumeric", err.Field())
+			} else if err.Tag() == "max" {
+				vErr["msg"] = fmt.Sprintf("%s Can Be Of Maximum %s Character", err.Field(), err.Param())
+			} else if err.Tag() == "eqfield" {
+				vErr["msg"] = fmt.Sprintf("%s Does Not Match With %s", err.Field(), err.Param())
+			} else if err.Tag() == "min" {
+				vErr["msg"] = fmt.Sprintf("%s Can Be Of Minimum %s Character", err.Field(), err.Param())
+			} else if err.Tag() == "email" {
+				vErr["msg"] = fmt.Sprintf("%s Should Be A Valid Email", err.Field())
+			} else if err.Tag() == "len" {
+				vErr["msg"] = fmt.Sprintf("%s Length Should Be %s", err.Field(), err.Param())
+			} else {
+				vErr["msg"] = fmt.Sprintf("Failed Validation For %s", err.Field())
+			}
+
+			vErrs = append(vErrs, vErr)
 		}
-
-		if err.Tag() == "required" {
-			vErr["msg"] = fmt.Sprintf("%s Is Mandatory", err.Field())
-		} else if err.Tag() == "alphanum" {
-			vErr["msg"] = fmt.Sprintf("%s Should Be Alphanumeric", err.Field())
-		} else if err.Tag() == "max" {
-			vErr["msg"] = fmt.Sprintf("%s Can Be Of Maximum %s Character", err.Field(), err.Param())
-		} else if err.Tag() == "eqfield" {
-			vErr["msg"] = fmt.Sprintf("%s Does Not Match With %s", err.Field(), err.Param())
-		} else if err.Tag() == "min" {
-			vErr["msg"] = fmt.Sprintf("%s Can Be Of Minimum %s Character", err.Field(), err.Param())
-		} else if err.Tag() == "email" {
-			vErr["msg"] = fmt.Sprintf("%s Should Be A Valid Email", err.Field())
-		} else if err.Tag() == "len" {
-			vErr["msg"] = fmt.Sprintf("%s Length Should Be %s", err.Field(), err.Param())
-		} else {
-			vErr["msg"] = fmt.Sprintf("Failed Validation For %s", err.Field())
-		}
-
-		vErrs = append(vErrs, vErr)
 	}
 
 	return vErrs

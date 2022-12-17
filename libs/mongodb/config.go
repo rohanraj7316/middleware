@@ -1,9 +1,11 @@
 package mongodb
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/rohanraj7316/middleware/libs/utils"
@@ -13,66 +15,103 @@ import (
 
 const (
 	ENV_MONGO_DB_CONNECTION_STRING = "MONGO_DB_CONNECTION_STRING"
-	ENV_MONGO_DB_HOSTS             = "MONGO_DB_HOSTS"
+	ENV_MONGO_DB_DATABASE_NAME     = "MONGO_DB_DATABASE_NAME"
 	ENV_MONGO_DB_MAX_IDLE_TIME     = "MONGO_DB_MAX_IDLE_TIME"
 	ENV_MONGO_DB_MAX_POOL_SIZE     = "MONGO_DB_MAX_POOL_SIZE"
 	ENV_MONGO_DB_MIN_POOL_SIZE     = "MONGO_DB_MIN_POOL_SIZE"
-	ENV_MONGO_DB_USERNAME          = "MONGO_DB_USERNAME"
-	ENV_MONGO_DB_PASSWORD          = "MONGO_DB_PASSWORD"
+	ENV_MONGO_DB_IS_TLS            = "MONGO_DB_IS_TLS"
+	ENV_MONGO_DB_TLS_PEM_FILE_PATH = "MONGO_DB_TLS_PEM_FILE_PATH"
 )
 
 type Config struct {
-	cOptions  *options.ClientOptions
-	dbOptions *options.DatabaseOptions
+	cOptions *options.ClientOptions
+	dOptions *options.DatabaseOptions
 
 	DbName string
 	Client *mongo.Client
-	Db     *mongo.Database
 }
 
-var ConfigDefault = Config{}
+var ConfigDefault = Config{
+	cOptions: &options.ClientOptions{},
+}
+
+func getCustomTLSConfig(caFile string) (*tls.Config, error) {
+	tlsConfig := new(tls.Config)
+	certs, err := ioutil.ReadFile(caFile)
+	if err != nil {
+		return tlsConfig, err
+	}
+
+	tlsConfig.RootCAs = x509.NewCertPool()
+	ok := tlsConfig.RootCAs.AppendCertsFromPEM(certs)
+
+	if !ok {
+		return tlsConfig, fmt.Errorf("failed parsing pem file")
+	}
+
+	return tlsConfig, nil
+}
 
 func configDefault(config ...Config) (Config, error) {
-	ConfigDefault.cOptions = &options.ClientOptions{}
+	if len(config) < 1 {
+		rEnvCfg := []string{
+			ENV_MONGO_DB_CONNECTION_STRING,
+			ENV_MONGO_DB_DATABASE_NAME,
+		}
+		uEnvCfg := []string{
+			ENV_MONGO_DB_MAX_IDLE_TIME,
+			ENV_MONGO_DB_MIN_POOL_SIZE,
+			ENV_MONGO_DB_MAX_POOL_SIZE,
+			ENV_MONGO_DB_IS_TLS,
+			ENV_MONGO_DB_TLS_PEM_FILE_PATH,
+		}
+		envCfg := utils.EnvData(rEnvCfg, uEnvCfg)
 
-	rEnvCfg := []string{
-		ENV_MONGO_DB_HOSTS,
-		// ENV_MONGO_DB_USERNAME,
-		// ENV_MONGO_DB_PASSWORD,
-		ENV_MONGO_DB_MAX_IDLE_TIME,
-		ENV_MONGO_DB_MIN_POOL_SIZE,
-		ENV_MONGO_DB_MAX_POOL_SIZE,
+		ConfigDefault.cOptions.ApplyURI(envCfg[ENV_MONGO_DB_CONNECTION_STRING])
+
+		if _, ok := envCfg[ENV_MONGO_DB_MAX_IDLE_TIME]; ok {
+			maxConnIdleTime, err := time.ParseDuration(fmt.Sprintf("%ss", envCfg[ENV_MONGO_DB_MAX_IDLE_TIME]))
+			if err != nil {
+				return ConfigDefault, err
+			}
+			ConfigDefault.cOptions = ConfigDefault.cOptions.SetMaxConnIdleTime(maxConnIdleTime)
+		}
+
+		if _, ok := envCfg[ENV_MONGO_DB_MAX_POOL_SIZE]; ok {
+			maxPoolSize, err := strconv.Atoi(envCfg[ENV_MONGO_DB_MAX_POOL_SIZE])
+			if err != nil {
+				return ConfigDefault, err
+			}
+			ConfigDefault.cOptions = ConfigDefault.cOptions.SetMaxPoolSize(uint64(maxPoolSize))
+		}
+
+		if _, ok := envCfg[ENV_MONGO_DB_MIN_POOL_SIZE]; ok {
+			minPoolSize, err := strconv.Atoi(envCfg[ENV_MONGO_DB_MIN_POOL_SIZE])
+			if err != nil {
+				return ConfigDefault, err
+			}
+			ConfigDefault.cOptions = ConfigDefault.cOptions.SetMinPoolSize(uint64(minPoolSize))
+		}
+
+		if isTls, ok := envCfg[ENV_MONGO_DB_IS_TLS]; ok {
+			if isTls == "true" {
+				if filepath, ok := envCfg[ENV_MONGO_DB_TLS_PEM_FILE_PATH]; ok {
+					tlsCfg, err := getCustomTLSConfig(filepath)
+					if err != nil {
+						return ConfigDefault, err
+					}
+
+					ConfigDefault.cOptions = ConfigDefault.cOptions.SetTLSConfig(tlsCfg)
+				} else {
+					return ConfigDefault, fmt.Errorf("empty tls pathname")
+				}
+			}
+		}
+
+		if _, ok := envCfg[ENV_MONGO_DB_DATABASE_NAME]; ok {
+			ConfigDefault.DbName = envCfg[ENV_MONGO_DB_DATABASE_NAME]
+		}
 	}
-	rCfg := utils.RequiredFields(rEnvCfg)
-
-	hostsStr := rCfg[ENV_MONGO_DB_HOSTS]
-	hostArr := strings.Split(hostsStr, ";")
-	ConfigDefault.cOptions = ConfigDefault.cOptions.SetHosts(hostArr)
-
-	ConfigDefault.cOptions.ApplyURI()
-
-	iDur, err := time.ParseDuration(fmt.Sprintf("%ss", rCfg[ENV_MONGO_DB_MAX_IDLE_TIME]))
-	if err != nil {
-		return ConfigDefault, err
-	}
-	ConfigDefault.cOptions = ConfigDefault.cOptions.SetMaxConnIdleTime(iDur)
-
-	pMaxSize, err := strconv.Atoi(rCfg[ENV_MONGO_DB_MAX_POOL_SIZE])
-	if err != nil {
-		return ConfigDefault, err
-	}
-	ConfigDefault.cOptions = ConfigDefault.cOptions.SetMaxPoolSize(uint64(pMaxSize))
-
-	pMinSize, err := strconv.Atoi(rCfg[ENV_MONGO_DB_MIN_POOL_SIZE])
-	if err != nil {
-		return ConfigDefault, err
-	}
-	ConfigDefault.cOptions = ConfigDefault.cOptions.SetMinPoolSize(uint64(pMinSize))
-
-	ConfigDefault.cOptions = ConfigDefault.cOptions.SetAuth(options.Credential{
-		Username: rCfg[ENV_MONGO_DB_USERNAME],
-		Password: rCfg[ENV_MONGO_DB_PASSWORD],
-	})
 
 	return ConfigDefault, nil
 }
