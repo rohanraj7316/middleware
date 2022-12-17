@@ -29,6 +29,7 @@ var ConfigDefault = Config{
 		OnConnect: func(ctx context.Context, cn *redis.Conn) error {
 			return nil
 		},
+		TLSConfig: &tls.Config{},
 	},
 }
 
@@ -79,7 +80,7 @@ func configDefault(config ...Config) (Config, error) {
 
 	cfg := config[0]
 	// TODO: need to fix after demo
-	// cfg.Redis.TLSConfig = &tls.Config{}
+	cfg.Redis.TLSConfig = &tls.Config{}
 
 	return cfg, nil
 }

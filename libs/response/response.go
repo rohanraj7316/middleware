@@ -1,6 +1,7 @@
 package response
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -43,4 +44,35 @@ func NewBody(c *fiber.Ctx, statusCode int, message interface{}, data interface{}
 		_ = errHandler(c, iErr)
 	}
 	return nil
+}
+
+func (b *BodyStruct) ToJson() ([]byte, error) {
+	switch t := b.Err.(type) {
+	case error:
+		b.Err = t.Error()
+	case string:
+		b.Err = t
+	case []byte:
+		b.Err = string(t)
+	case interface{}:
+		b.Err = t
+	}
+
+	switch t := b.Message.(type) {
+	case error:
+		b.Message = t.Error()
+	case string:
+		b.Message = t
+	case []byte:
+		b.Message = string(t)
+	case interface{}:
+		b.Message = t
+	}
+
+	by, err := json.Marshal(b)
+	if err != nil {
+		return nil, err
+	}
+
+	return by, nil
 }
